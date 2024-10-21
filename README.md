@@ -1,6 +1,6 @@
-# Welcome to your Expo app 👋
+# Welcome to shuttlify 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Shuttlify is a shuttle management application that helps organization that are running shuttles around the area .
 
 ## Get started
 
