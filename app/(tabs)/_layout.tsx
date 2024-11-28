@@ -73,6 +73,31 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="login"
+        options={{
+          href: {
+            pathname: "/login",
+          },
+          title: "Shuttle Times",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? "bus" : "bus-outline"} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="register"
+        options={{
+          href: {
+            pathname: "/register",
+          },
+          title: "Shuttle Times",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? "bus" : "bus-outline"} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

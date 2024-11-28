@@ -15,12 +15,15 @@ import ShuttleRouteCard from "@/components/cards/routeCard";
 import { supabaseClient } from "@/database/client";
 
 // context API
+import { AuthContext } from "@/contexts/authContext";
 import { RouteContext } from "@/contexts/routeContext";
 
 export default function RouteListScreen() {
   const [routes, setRoutes] = useState();
 
   const { selectedRoute, setSelectedRoute } = useContext(RouteContext);
+  const { isLoggedIn, setIsLoggedIn, userInfo, setUserInfo } =
+    useContext(AuthContext);
 
   async function getRoutes() {
     let { data: routes, error } = await supabaseClient
@@ -36,6 +39,9 @@ export default function RouteListScreen() {
   }
 
   useEffect(() => {
+    if (!isLoggedIn) {
+      router.replace("/login");
+    }
     const fetchData = async () => {
       const data = await getRoutes();
       if (data) {
