@@ -121,6 +121,22 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="driver"
+        options={{
+          href: {
+            pathname: "/driver",
+          },
+          title: "Driver Portal",
+          headerLeft: () => null,
+          headerRight: ({ color, focused }) => (
+            <LogOut color={color} focused={focused} />
+          ),
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? "bus" : "bus-outline"} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

@@ -38,10 +38,17 @@ export default function LoginScreen() {
       if (error) {
         Alert.alert("Login Error");
       } else {
-        console.log(data, error);
         setUserInfo({ auth: authData, userInfo: data });
         setIsLoggedIn(true);
-        router.replace("/");
+
+        if (data.length > 0) {
+          if (data[0].user_type == "student") {
+            router.push("/");
+          }
+          if (data[0].user_type == "driver") {
+            router.push("/driver");
+          }
+        }
       }
     }
     setLoading(false);
