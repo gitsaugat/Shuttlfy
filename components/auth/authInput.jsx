@@ -1,7 +1,8 @@
 //@ts-nocheck
-import React from "react";
+import React, { useContext } from "react";
 import { TextInput, View, Text, StyleSheet } from "react-native";
-
+import { TabBarIcon } from "../navigation/TabBarIcon";
+import { AuthContext } from "@/contexts/authContext";
 export const AuthInput = ({
   placeholder,
   value,
@@ -43,3 +44,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+
+export const LogOut = ({ focused, color }) => {
+  const { setIsLoggedIn, setUserInfo } = useContext(AuthContext);
+  function handleLogout() {
+    setIsLoggedIn(false);
+    setUserInfo({});
+  }
+  return (
+    <TabBarIcon
+      name={focused ? "log-out" : "log-out-outline"}
+      color={color}
+      onPress={() => handleLogout()}
+      style={{ marginRight: "10" }}
+    />
+  );
+};

@@ -1,3 +1,5 @@
+import "expo-router/entry";
+
 import {
   DarkTheme,
   DefaultTheme,

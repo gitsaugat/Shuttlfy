@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { useRouter, Tabs } from "expo-router";
 import React from "react";
 
@@ -5,6 +6,7 @@ import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { TouchableOpacity } from "react-native";
+import { LogOut } from "@/components/auth/authInput";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -40,6 +42,9 @@ export default function TabLayout() {
           },
           title: "Routes",
           headerLeft: () => null,
+          headerRight: ({ color, focused }) => (
+            <LogOut color={color} focused={focused} />
+          ),
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "location" : "location-outline"}
@@ -56,6 +61,9 @@ export default function TabLayout() {
             params: {},
           },
           title: "Explore",
+          headerRight: ({ color, focused }) => (
+            <LogOut color={color} focused={focused} />
+          ),
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? "map" : "map-outline"} color={color} />
           ),

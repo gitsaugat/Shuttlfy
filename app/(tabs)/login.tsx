@@ -24,12 +24,25 @@ export default function LoginScreen() {
       password,
     });
 
-    if (error) {
+    const authData = data;
+    const authError = error;
+
+    if (authError) {
       Alert.alert("Login Error", error.message);
     } else {
-      setUserInfo(data);
-      setIsLoggedIn(true);
-      router.replace("/");
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("email", authData.user?.email);
+
+      if (error) {
+        Alert.alert("Login Error");
+      } else {
+        console.log(data, error);
+        setUserInfo({ auth: authData, userInfo: data });
+        setIsLoggedIn(true);
+        router.replace("/");
+      }
     }
     setLoading(false);
   };
