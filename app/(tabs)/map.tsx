@@ -1,91 +1,7 @@
 //@ts-nocheck
 
-export const ROUTES = [
-  {
-    id: "campus/tops",
-    name: "TOPS",
-    pickup: {
-      latitude: 42.93311142,
-      longitude: -78.881111,
-    },
-    dropoff: {
-      latitude: 42.9394862,
-      longitude: -78.8888097,
-    },
-  },
-  {
-    id: "campus/wegmans",
-    name: "Wegmans",
-    pickup: {
-      latitude: 42.93311142,
-      longitude: -78.881111,
-    },
-    dropoff: {
-      latitude: 42.9374392,
-      longitude: -78.882316,
-    },
-  },
-  {
-    id: "campus/stack",
-    name: "Stack",
-    pickup: {
-      latitude: 42.93311142,
-      longitude: -78.881111,
-    },
-    dropoff: {
-      latitude: 42.932849,
-      longitude: -78.887688,
-    },
-  },
-  {
-    id: "campus/monarch",
-    name: "Monarch",
-    pickup: {
-      latitude: 42.93311143,
-      longitude: -78.881111,
-    },
-    dropoff: {
-      latitude: 43.0858219,
-      longitude: -78.884255,
-    },
-  },
-  {
-    id: "campus/niagara_falls",
-    name: "Niagara Falls",
-    pickup: {
-      latitude: 42.93311143,
-      longitude: -78.881111,
-    },
-    dropoff: {
-      latitude: 43.0858219,
-      longitude: -79.0536008,
-    },
-  },
-  {
-    id: "campus/towers",
-    name: "Towers",
-    pickup: {
-      latitude: 42.93311143,
-      longitude: -78.881111,
-    },
-    dropoff: {
-      latitude: 42.9362495,
-      longitude: -78.884255,
-    },
-  },
-  {
-    id: "campus/coyer_field",
-    name: "Coyer Field",
-    pickup: {
-      latitude: 42.93311142,
-      longitude: -78.881111,
-    },
-    dropoff: {
-      latitude: 42.9348603,
-      longitude: -78.8880042,
-    },
-  },
-];
+export const ROUTES = [];
+
 import ShuttleRouteCard from "@/components/cards/routeCard";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { router } from "expo-router";
@@ -102,42 +18,34 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import { ScrollView } from "react-native";
 import { RouteContext } from "@/contexts/routeContext";
-
+import { getTimeSlots } from "@/utils/time";
 export default function ExploreScreen() {
   const { selectedRoute, setSelectedRoute } = useContext(RouteContext);
+
+  const [shuttleSchedule, setShuttleSchedule] = useState([]);
 
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     setModalVisible(true);
-    console.log(selectedRoute);
-  }, []);
+    if (selectedRoute) {
+      if (shuttleSchedule.length == 0) {
+        let timeSlots = getTimeSlots(
+          selectedRoute.runs_from,
+          selectedRoute.runs_untill
+        );
+
+        if (timeSlots.length > 0) {
+          setShuttleSchedule(timeSlots);
+        }
+      } else {
+        console.log(shuttleSchedule, "");
+      }
+    }
+  }, [selectedRoute]);
 
   const handleMarkerPress = (route) => {
-    setSelectedRoute(route);
     setModalVisible(true);
-  };
-
-  const shuttleTimes = [
-    { time: "7:00 AM", availability: "High" },
-    { time: "9:30 AM", availability: "Medium" },
-    { time: "12:00 PM", availability: "Low" },
-    { time: "2:30 PM", availability: "High" },
-    { time: "5:00 PM", availability: "Medium" },
-    { time: "7:30 PM", availability: "Low" },
-  ];
-
-  const getAvailabilityColor = (availability) => {
-    switch (availability) {
-      case "High":
-        return "green";
-      case "Medium":
-        return "orange";
-      case "Low":
-        return "red";
-      default:
-        return "gray";
-    }
   };
 
   return (
@@ -152,15 +60,20 @@ export default function ExploreScreen() {
           longitudeDelta: 0.2,
         }}
       >
-        {ROUTES.map((route) => (
+        {selectedRoute && (
           <Marker
-            key={route.id}
-            coordinate={route.dropoff}
-            title={`${route.name} Drop-off`}
+            key={selectedRoute.id}
+            coordinate={{
+              latitude: selectedRoute.drop_off_lat,
+              longitude: selectedRoute.drop_off_long,
+            }}
+            title={`${selectedRoute.route} Drop Off`}
             pinColor="red"
-            onPress={() => handleMarkerPress(route)}
+            onPress={() => {
+              handleMarkerPress(selectedRoute);
+            }}
           />
-        ))}
+        )}
       </MapView>
 
       <Modal
@@ -177,15 +90,18 @@ export default function ExploreScreen() {
                   <>
                     <Text style={styles.routeTitle}>Route Timings</Text>
                     <ScrollView>
-                      {shuttleTimes.map((slot, index) => (
+                      {shuttleSchedule?.map((shuttle) => (
                         <ShuttleRouteCard
-                          key={index}
+                          key={Math.random()}
                           onPress={() => {}}
-                          routeName={"Test"}
+                          routeName={selectedRoute.route
+                            .replace("/", "-")
+                            .toUpperCase()}
                           routeNumber="N01"
-                          departureTime="Every 30 Minutes"
+                          departureTime={shuttle}
                           arrivalTime="08:15 AM"
-                          distance="12.5"
+                          distance=""
+                          status={selectedRoute.available}
                           iconName="environment"
                         />
                       ))}
