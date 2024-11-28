@@ -1,70 +1,138 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+//@ts-nocheck
+import React, { useEffect, useState, useContext } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { TabBarIcon } from "@/components/navigation/TabBarIcon";
+import ShuttleRouteCard from "@/components/cards/routeCard";
+import { supabaseClient } from "@/database/client";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+// context API
+import { RouteContext } from "@/contexts/routeContext";
 
-export default function HomeScreen() {
+export default function RouteListScreen() {
+  const [routes, setRoutes] = useState();
+
+  const { selectedRoute, setSelectedRoute } = useContext(RouteContext);
+
+  async function getRoutes() {
+    let { data: routes, error } = await supabaseClient
+      .from("routes")
+      .select("*");
+
+    if (error) {
+      console.error("Error fetching routes:", error);
+      return null;
+    }
+
+    return routes;
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getRoutes();
+      if (data) {
+        console.log(data);
+        setRoutes(data);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const router = useRouter();
+
+  const navigateToDetails = (routeName) => {
+    router.push(`/map`);
+  };
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.routeItem}
+      onPress={() => navigateToDetails(item.name)}
+    >
+      <ShuttleRouteCard
+        onPress={() => {
+          setSelectedRoute(item);
+          navigateToDetails(item.name);
+        }}
+        routeName={item.route}
+        routeNumber="N01"
+        departureTime={`Every ${item.runs_every} Minutes`}
+        arrivalTime="08:15 AM"
+        distance="12.5"
+        iconName="environment"
+      />
+    </TouchableOpacity>
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Select Route</Text>
+      <FlatList
+        data={routes}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.flatListContainer}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1, // SafeAreaView container should take up the full height
+    backgroundColor: "#f5f5f5",
+    padding: 16,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 20,
+    marginTop: 20,
+    textAlign: "center",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  flatListContainer: {
+    flexGrow: 1, // Ensures the flat list can grow and take up remaining space
+    paddingBottom: 20,
+  },
+  routeItem: {
+    marginLeft: "8%",
+    marginRight: "8%",
+    marginTop: "2%",
+    marginBottom: "2%",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  routeImage: {
+    borderRadius: 25,
+    marginRight: 16,
+  },
+  routeInfo: {
+    flex: 1,
+  },
+  routeName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "white",
+  },
+  routeDetails: {
+    fontSize: 14,
+    color: "#888",
+    marginTop: 4,
   },
 });
