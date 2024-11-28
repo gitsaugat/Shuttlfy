@@ -80,7 +80,8 @@ export default function TabLayout() {
           href: {
             pathname: "/login",
           },
-          title: "Shuttle Times",
+          title: "User Login",
+          headerLeft: () => null,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? "bus" : "bus-outline"} color={color} />
           ),
@@ -92,7 +93,21 @@ export default function TabLayout() {
           href: {
             pathname: "/register",
           },
-          title: "Shuttle Times",
+          title: "User Registration",
+          headerLeft: () => null,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? "bus" : "bus-outline"} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="verification"
+        options={{
+          href: {
+            pathname: "/verification",
+          },
+          title: "User Verification",
+          headerLeft: () => null,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? "bus" : "bus-outline"} color={color} />
           ),

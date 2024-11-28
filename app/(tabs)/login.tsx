@@ -1,10 +1,12 @@
 //@ts-nocheck
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
 import { supabaseClient as supabase } from "../../database/client";
 import { AuthInput } from "../../components/auth/authInput";
+
+import { AuthContext } from "@/contexts/authContext";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -12,9 +14,12 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const { isLoggedIn, setIsLoggedIn, userInfo, setUserInfo } =
+    useContext(AuthContext);
+
   const handleLogin = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -22,7 +27,9 @@ export default function LoginScreen() {
     if (error) {
       Alert.alert("Login Error", error.message);
     } else {
-      router.replace("/dashboard");
+      setUserInfo(data);
+      setIsLoggedIn(true);
+      router.replace("/");
     }
     setLoading(false);
   };

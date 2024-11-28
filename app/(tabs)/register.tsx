@@ -43,10 +43,10 @@ export default function RegisterScreen() {
       });
 
       if (profileError) {
-        console.error("Profile creation error", profileError);
+        Alert.alert("Error Creating Profile, Please try again later");
       }
 
-      router.replace("/dashboard");
+      router.replace("/login");
     }
     setLoading(false);
   };

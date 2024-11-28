@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
   SafeAreaView,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
@@ -26,32 +27,33 @@ export default function RouteListScreen() {
     useContext(AuthContext);
 
   async function getRoutes() {
-    let { data: routes, error } = await supabaseClient
-      .from("routes")
-      .select("*");
+    try {
+      const { data: routes, error } = await supabaseClient
+        .from("routes")
+        .select("*");
 
-    if (error) {
-      console.error("Error fetching routes:", error);
-      return null;
+      if (error) throw error;
+      return routes;
+    } catch (error) {
+      Alert.alert("Error fetching routes:", error);
+      return [];
     }
-
-    return routes;
   }
 
   useEffect(() => {
+    // Check login status
     if (!isLoggedIn) {
-      router.replace("/login");
+      setTimeout(() => router.replace("/login"), 1000);
+      return;
     }
+
     const fetchData = async () => {
       const data = await getRoutes();
-      if (data) {
-        console.log(data);
-        setRoutes(data);
-      }
+      setRoutes(data);
     };
 
     fetchData();
-  }, []);
+  }, [isLoggedIn, router]);
 
   const router = useRouter();
 
