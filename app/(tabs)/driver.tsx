@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -7,19 +7,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   SafeAreaView,
-  Dimensions,
   Platform,
 } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import * as Location from "expo-location";
 import { supabaseClient as supabase } from "@/database/client";
 import { AuthContext } from "@/contexts/authContext";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { TabBarIcon } from "@/components/navigation/TabBarIcon";
+import MapView, { Marker } from "react-native-maps";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const driver = () => {
-  const { isLoggedIn, setIsLoggedIn, userInfo, setUserInfo } =
-    useContext(AuthContext);
   const [selectedRoute, setSelectedRoute] = useState("");
   const [selectedShuttle, setSelectedShuttle] = useState("");
   const [routes, setRoutes] = useState([]);
@@ -27,13 +24,24 @@ const driver = () => {
   const [isTracking, setIsTracking] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentLocation, setCurrentLocation] = useState(null);
-  const mapRef = useRef(null);
+  const [locationSubscription, setLocationSubscription] = useState(null);
+  const [trackingId, setTrackingId] = useState(null);
+  const { isLoggedIn, setIsLoggedIn, userInfo, setUserInfo } =
+    useContext(AuthContext);
 
   useEffect(() => {
     fetchData();
     requestLocationPermission();
     getCurrentLocation();
-  }, [isLoggedIn]);
+
+    // Cleanup on unmount
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+      stopTracking();
+    };
+  }, []);
 
   const getCurrentLocation = async () => {
     try {
@@ -41,6 +49,8 @@ const driver = () => {
       setCurrentLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
       });
     } catch (error) {
       console.error("Error getting current location:", error);
@@ -50,7 +60,6 @@ const driver = () => {
   const fetchData = async () => {
     try {
       const { data: routesData } = await supabase.from("routes").select("*");
-
       const { data: shuttlesData } = await supabase
         .from("shuttles")
         .select("*");
@@ -83,58 +92,97 @@ const driver = () => {
   };
 
   const startTracking = async () => {
-    if (!selectedRoute || !selectedShuttle) return;
+    if (!selectedRoute || !selectedShuttle || !currentLocation) return;
 
-    setIsTracking(true);
-    Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.High,
-        timeInterval: 5000,
-        distanceInterval: 10,
-      },
-      async (location) => {
-        try {
-          const newLocation = {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          };
-          setCurrentLocation(newLocation);
+    try {
+      console.log(userInfo);
+      console.log({
+        route: selectedRoute,
+        shuttle: selectedShuttle,
+        driver: userInfo?.userInfo,
+        current_lat: currentLocation.latitude,
+        current_long: currentLocation.longitude,
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      });
+      // Insert initial tracking record
+      const { data, error } = await supabase
+        .from("shuttle_locations")
+        .insert({
+          route: selectedRoute,
+          shuttle: selectedShuttle,
+          driver: userInfo?.userInfo[0]?.id,
+          current_lat: currentLocation.latitude,
+          current_long: currentLocation.longitude,
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
 
-          // Animate map to new location
-          mapRef.current?.animateToRegion(
-            {
-              ...newLocation,
+      if (error) throw error;
+
+      setTrackingId(data.id);
+      setIsTracking(true);
+
+      // Start location watching
+      const subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 15000, // Update every 15 seconds
+          distanceInterval: 10,
+        },
+        async (location) => {
+          try {
+            // Update location in database
+            await supabase
+              .from("shuttle_locations")
+              .update({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                timestamp: new Date().toISOString(),
+              })
+              .eq("id", data.id);
+
+            setCurrentLocation({
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
               latitudeDelta: 0.005,
               longitudeDelta: 0.005,
-            },
-            1000
-          );
-
-          await supabase.from("shuttle_locations").upsert({
-            route_id: selectedRoute,
-            shuttle_id: selectedShuttle,
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-            timestamp: new Date().toISOString(),
-          });
-        } catch (error) {
-          console.error("Error updating location:", error);
+            });
+          } catch (error) {
+            console.error("Error updating location:", error);
+          }
         }
+      );
+
+      setLocationSubscription(subscription);
+    } catch (error) {
+      console.error("Error starting tracking:", error);
+    }
+  };
+
+  const stopTracking = async () => {
+    try {
+      // Remove location subscription
+      if (locationSubscription) {
+        locationSubscription.remove();
       }
-    );
+
+      // Delete tracking record from database
+      if (trackingId) {
+        await supabase.from("shuttle_locations").delete().eq("id", trackingId);
+      }
+
+      setIsTracking(false);
+      setLocationSubscription(null);
+      setTrackingId(null);
+    } catch (error) {
+      console.error("Error stopping tracking:", error);
+    }
   };
 
-  const stopTracking = () => {
-    setIsTracking(false);
-  };
-
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0066CC" />
-      </View>
-    );
-  }
+  // ... Rest of the render code with MapView remains the same ...
 
   return (
     <SafeAreaView style={styles.container}>
@@ -179,38 +227,34 @@ const driver = () => {
           <Text style={styles.trackingText}>Location tracking active...</Text>
         )}
 
-        {currentLocation && (
-          <View style={styles.mapContainer}>
-            <MapView
-              ref={mapRef}
-              style={styles.map}
-              initialRegion={{
-                latitude: currentLocation.latitude,
-                longitude: currentLocation.longitude,
-                latitudeDelta: 0.005,
-                longitudeDelta: 0.005,
-              }}
-            >
+        <View style={styles.mapContainer}>
+          {currentLocation && (
+            <MapView style={styles.map} initialRegion={currentLocation}>
               <Marker
                 coordinate={{
                   latitude: currentLocation.latitude,
                   longitude: currentLocation.longitude,
                 }}
-                image={"./"}
-                title="Current Location"
-                description={
-                  isTracking ? "Tracking Active" : "Tracking Inactive"
-                }
               >
-                <TabBarIcon name={"bus"} color={"black"} />
+                <View style={styles.markerContainer}>
+                  <MaterialIcons
+                    name="directions-bus"
+                    size={30}
+                    color={isTracking ? "#4CAF50" : "#666"}
+                  />
+                </View>
               </Marker>
             </MapView>
-          </View>
-        )}
+          )}
+        </View>
       </View>
     </SafeAreaView>
   );
 };
+
+export default driver;
+
+// ... Styles remain the same ...
 
 const styles = StyleSheet.create({
   container: {
@@ -284,5 +328,3 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 });
-
-export default driver;
