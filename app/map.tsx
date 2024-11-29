@@ -1,5 +1,7 @@
 //@ts-nocheck
 import ShuttleRouteCard from "@/components/cards/routeCard";
+
+import { TimeCard } from "@/components/cards/timeCard";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { router } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
@@ -25,6 +27,28 @@ export default function ExploreScreen() {
   const [shuttleSchedule, setShuttleSchedule] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeShuttles, setActiveShuttles] = useState([]);
+  const fetchActiveShuttles = async () => {
+    try {
+      const { data: shuttles, error } = await supabaseClient
+        .from("shuttle_locations")
+        .select(
+          `
+          *,
+          shuttles (
+            shuttle_number
+          )
+        `
+        )
+        .eq("route", selectedRoute.id)
+        .eq("is_active", true);
+
+      if (error) throw error;
+
+      setActiveShuttles(shuttles || []);
+    } catch (error) {
+      Alert.alert("Error fetching active shuttles:");
+    }
+  };
 
   useEffect(() => {
     setModalVisible(true);
@@ -65,29 +89,6 @@ export default function ExploreScreen() {
       };
     }
   }, [selectedRoute]);
-
-  const fetchActiveShuttles = async () => {
-    try {
-      const { data: shuttles, error } = await supabaseClient
-        .from("shuttle_locations")
-        .select(
-          `
-          *,
-          shuttles (
-            shuttle_number
-          )
-        `
-        )
-        .eq("route", selectedRoute.id)
-        .eq("is_active", true);
-
-      if (error) throw error;
-
-      setActiveShuttles(shuttles || []);
-    } catch (error) {
-      Alert.alert("Error fetching active shuttles:");
-    }
-  };
 
   const handleMarkerPress = (route) => {
     setModalVisible(true);
@@ -160,21 +161,22 @@ export default function ExploreScreen() {
                           }`}
                         </Text>
                       )}
+                      {activeShuttles.length < 1 && (
+                        <Text style={styles.noShuttles}>
+                          {` • No Active Shuttles`}
+                        </Text>
+                      )}
                     </Text>
                     <ScrollView>
                       {shuttleSchedule?.map((shuttle) => (
-                        <ShuttleRouteCard
+                        <TimeCard
                           key={Math.random()}
                           onPress={() => {}}
                           routeName={selectedRoute.route
                             .replace("/", "-")
                             .toUpperCase()}
-                          routeNumber="N01"
+                          routeNumber={shuttle}
                           departureTime={shuttle}
-                          arrivalTime="08:15 AM"
-                          distance=""
-                          status={selectedRoute.available}
-                          iconName="environment"
                         />
                       ))}
                     </ScrollView>
@@ -222,6 +224,10 @@ const styles = StyleSheet.create({
   },
   activeShuttleText: {
     color: "#4CAF50",
+    fontSize: 14,
+  },
+  noShuttles: {
+    color: "red",
     fontSize: 14,
   },
   timeSlot: {

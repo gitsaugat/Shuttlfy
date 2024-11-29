@@ -14,6 +14,7 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import RouteProvider, { RouteContext } from "@/contexts/routeContext";
 import AuthProvider, { AuthContext } from "@/contexts/authContext";
+import { RequireAuth } from "@/components/auth/requireAuth";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -47,6 +48,55 @@ export default function RootLayout() {
               headerBackTitle: "Back",
             }}
           >
+            <Stack.Screen
+              name="index"
+              options={{
+                headerBackVisible: false,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="login"
+              options={{
+                title: "Login",
+                headerBackVisible: false,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="register"
+              options={{
+                title: "Register",
+                headerBackVisible: false,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="map"
+              options={{
+                title: "Map",
+                headerBackVisible: true,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="driver"
+              options={{
+                title: "Driver Portal",
+                headerBackVisible: true,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>

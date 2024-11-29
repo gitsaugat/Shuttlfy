@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,18 +12,6 @@ const ShuttleRouteCard = ({
   status = false,
   onPress,
 }) => {
-  // Determine status color
-  const getStatusColor = () => {
-    switch (status) {
-      case true:
-        return "#4CAF50"; // Green
-      case false:
-        return "#F44336"; // Red
-      default:
-        return "#2196F3"; // Blue
-    }
-  };
-
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.iconContainer}>
@@ -33,11 +22,6 @@ const ShuttleRouteCard = ({
       <View style={styles.detailsContainer}>
         <View style={styles.headerContainer}>
           <Text style={styles.routeNameText}>{routeName}</Text>
-          <View
-            style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}
-          >
-            <Text style={styles.statusText}>{"Status"}</Text>
-          </View>
         </View>
 
         <View style={styles.timeContainer}>

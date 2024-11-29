@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
-import { supabaseClient as supabase } from "../../database/client";
-import { AuthInput } from "../../components/auth/authInput";
+import { supabaseClient as supabase } from "@/database/client";
+import { AuthInput } from "@/components/auth/authInput";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
