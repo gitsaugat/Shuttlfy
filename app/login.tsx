@@ -48,6 +48,9 @@ export default function LoginScreen() {
           if (data[0].user_type == "driver") {
             router.push("/driver");
           }
+          if (data[0].user_type == "admin") {
+            router.push("/admin/routes");
+          }
         }
       }
     }
