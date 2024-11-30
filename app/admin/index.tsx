@@ -48,6 +48,21 @@ export default function AdminDashboard() {
             <Feather name="chevron-right" size={24} color="#666" />
           </View>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => router.push("/admin/pickup")}
+        >
+          <View style={styles.iconContainer}>
+            <Feather name="home" size={32} color="#fc4e03" />
+          </View>
+          <Text style={styles.cardTitle}>Manage Pickup Locations</Text>
+          <Text style={styles.cardDescription}>
+            Track and manage pick up locations
+          </Text>
+          <View style={styles.arrowContainer}>
+            <Feather name="chevron-right" size={24} color="#666" />
+          </View>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
