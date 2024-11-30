@@ -109,35 +109,6 @@ export default function ShuttleList() {
                   <Feather name="trash-2" size={20} color="#d92d20" />
                 </TouchableOpacity>
               </View>
-
-              <View style={styles.mapContainer}>
-                <MapView
-                  style={styles.map}
-                  initialRegion={{
-                    latitude: shuttle.current_lat || 0,
-                    longitude: shuttle.current_long || 0,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                  }}
-                  scrollEnabled={false}
-                  zoomEnabled={false}
-                >
-                  <Marker
-                    coordinate={{
-                      latitude: shuttle.current_lat || 0,
-                      longitude: shuttle.current_long || 0,
-                    }}
-                    title={`Shuttle ${shuttle.shuttle_number}`}
-                  />
-                </MapView>
-              </View>
-
-              <View style={styles.locationInfo}>
-                <Text style={styles.locationText}>
-                  Current Location: {shuttle.current_lat.toFixed(6)},{" "}
-                  {shuttle.current_long.toFixed(6)}
-                </Text>
-              </View>
             </View>
           ))
         )}
@@ -145,7 +116,7 @@ export default function ShuttleList() {
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => router.push("/admin/shuttles/create")}
+        onPress={() => router.push("/admin/shuttle/create")}
       >
         <View style={styles.fabInner}>
           <Text style={styles.fabIcon}>+</Text>

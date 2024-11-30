@@ -5,7 +5,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
 import { supabaseClient as supabase } from "@/database/client";
 import { AuthInput } from "@/components/auth/authInput";
-
 import { AuthContext } from "@/contexts/authContext";
 
 export default function LoginScreen() {
@@ -49,7 +48,7 @@ export default function LoginScreen() {
             router.push("/driver");
           }
           if (data[0].user_type == "admin") {
-            router.push("/admin/routes");
+            router.push("/admin");
           }
         }
       }

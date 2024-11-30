@@ -140,7 +140,7 @@ export default function AdminRouteForm() {
             <Text>Runs From:</Text>
             <TextInput
               style={styles.input}
-              placeholder="Runs Every (minutes)"
+              placeholder="00:00:00"
               value={runsFrom}
               onChangeText={setRunsFrom}
               keyboardType="default"
@@ -150,7 +150,7 @@ export default function AdminRouteForm() {
             <Text>Runs Until</Text>
             <TextInput
               style={styles.input}
-              placeholder="Runs Every (minutes)"
+              placeholder="00:00:00"
               value={runsUntil}
               onChangeText={setRunsUntil}
               keyboardType="default"
@@ -163,7 +163,7 @@ export default function AdminRouteForm() {
         <View style={styles.mapContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Runs Every (minutes)"
+            placeholder="30"
             value={runsEvery}
             onChangeText={setRunsEvery}
             keyboardType="numeric"

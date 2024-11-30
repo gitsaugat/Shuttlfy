@@ -14,12 +14,15 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarStyle: {
-          display: "none",
-          backgroundColor: "#333", // Dark background for the tab bar
-        },
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: true,
+        tabBarStyle: {
+          elevation: 5,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 3,
+        },
+        headerShown: false,
         headerStyle: {
           backgroundColor: "#1A73E8",
         },
@@ -35,21 +38,20 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="routes"
         options={{
-          href: {
-            pathname: "/",
-          },
           title: "Routes",
-          headerLeft: () => null,
-          headerRight: ({ color, focused }) => (
-            <LogOut color={color} focused={focused} />
+          tabBarIcon: ({ color, size }) => (
+            <TabBarIcon name="map" color={color} size={size} />
           ),
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon
-              name={focused ? "location" : "location-outline"}
-              color={color}
-            />
+        }}
+      />
+      <Tabs.Screen
+        name="shuttles"
+        options={{
+          title: "Shuttles",
+          tabBarIcon: ({ color, size }) => (
+            <TabBarIcon name="truck" color={color} size={size} />
           ),
         }}
       />

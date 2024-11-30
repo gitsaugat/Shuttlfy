@@ -15,10 +15,6 @@ import MapView, { Marker } from "react-native-maps";
 
 export default function CreateShuttle() {
   const [shuttleNumber, setShuttleNumber] = useState("");
-  const [currentLocation, setCurrentLocation] = useState({
-    latitude: 42.93311142,
-    longitude: -78.881111,
-  });
 
   const handleSubmit = async () => {
     if (!shuttleNumber.trim()) {
@@ -30,8 +26,6 @@ export default function CreateShuttle() {
       const { error } = await supabase.from("shuttles").insert([
         {
           shuttle_number: shuttleNumber,
-          current_lat: currentLocation.latitude,
-          current_long: currentLocation.longitude,
         },
       ]);
 
@@ -57,36 +51,6 @@ export default function CreateShuttle() {
           value={shuttleNumber}
           onChangeText={setShuttleNumber}
         />
-      </View>
-
-      <View style={styles.formSection}>
-        <Text style={styles.label}>Initial Location</Text>
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: currentLocation.latitude,
-              longitude: currentLocation.longitude,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-            onPress={(e) => {
-              setCurrentLocation({
-                latitude: e.nativeEvent.coordinate.latitude,
-                longitude: e.nativeEvent.coordinate.longitude,
-              });
-            }}
-          >
-            <Marker coordinate={currentLocation} title="Initial Location" />
-          </MapView>
-        </View>
-        <Text style={styles.locationText}>
-          Tap on the map to set initial location
-        </Text>
-        <View style={styles.coordinates}>
-          <Text>Latitude: {currentLocation.latitude.toFixed(6)}</Text>
-          <Text>Longitude: {currentLocation.longitude.toFixed(6)}</Text>
-        </View>
       </View>
 
       <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
@@ -141,22 +105,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 12,
   },
-  map: {
-    width: "100%",
-    height: "100%",
-  },
-  locationText: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  coordinates: {
-    backgroundColor: "#f8f9fa",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
+
   submitButton: {
     backgroundColor: "#2196F3",
     padding: 16,

@@ -97,6 +97,66 @@ export default function RootLayout() {
                 },
               }}
             />
+            <Stack.Screen
+              name="admin/index"
+              options={{
+                title: "Admin",
+                headerBackVisible: true,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="admin/routes/index"
+              options={{
+                title: "Routes",
+                headerBackVisible: true,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="admin/routes/create"
+              options={{
+                title: "Create Route",
+                headerBackVisible: true,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="admin/routes/edit/[id]/index"
+              options={{
+                title: "Edit Route",
+                headerBackVisible: true,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="admin/shuttle/index"
+              options={{
+                title: "Shuttles",
+                headerBackVisible: true,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="admin/shuttle/create"
+              options={{
+                title: "Add Shuttle",
+                headerBackVisible: true,
+                headerStyle: {
+                  backgroundColor: "#1A73E8",
+                },
+              }}
+            />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
