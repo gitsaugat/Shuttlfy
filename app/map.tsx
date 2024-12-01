@@ -1,10 +1,9 @@
 //@ts-nocheck
 import ShuttleRouteCard from "@/components/cards/routeCard";
-
 import { TimeCard } from "@/components/cards/timeCard";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { router } from "expo-router";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -22,11 +21,36 @@ import { getTimeSlots } from "@/utils/time";
 import { supabaseClient } from "@/database/client";
 import { MaterialIcons } from "@expo/vector-icons";
 
+const BUFFALO_STATE = {
+  latitude: 42.93311142,
+  longitude: -78.881111,
+  latitudeDelta: 0.02,
+  longitudeDelta: 0.02,
+};
+
 export default function ExploreScreen() {
   const { selectedRoute, setSelectedRoute } = useContext(RouteContext);
   const [shuttleSchedule, setShuttleSchedule] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeShuttles, setActiveShuttles] = useState([]);
+  const [pickupLocations, setPickupLocations] = useState([]);
+  const mapRef = useRef(null);
+
+  const fetchPickupLocations = async () => {
+    try {
+      const { data, error } = await supabaseClient
+        .from("pickup_locations")
+        .select("*")
+        .eq("route", selectedRoute.id)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      setPickupLocations(data || []);
+    } catch (error) {
+      Alert.alert("Error", "Could not fetch pickup locations");
+    }
+  };
+
   const fetchActiveShuttles = async () => {
     try {
       const { data: shuttles, error } = await supabaseClient
@@ -43,7 +67,6 @@ export default function ExploreScreen() {
         .eq("is_active", true);
 
       if (error) throw error;
-
       setActiveShuttles(shuttles || []);
     } catch (error) {
       Alert.alert("Error fetching active shuttles:");
@@ -51,20 +74,20 @@ export default function ExploreScreen() {
   };
 
   useEffect(() => {
-    setModalVisible(true);
     if (selectedRoute) {
+      setModalVisible(true);
+      fetchPickupLocations();
+
       if (shuttleSchedule.length == 0) {
         let timeSlots = getTimeSlots(
           selectedRoute.runs_from,
           selectedRoute.runs_untill
         );
-
         if (timeSlots.length > 0) {
           setShuttleSchedule(timeSlots);
         }
       }
 
-      // Fetch active shuttles for the selected route
       fetchActiveShuttles();
 
       // Set up real-time subscription for shuttle locations
@@ -90,6 +113,36 @@ export default function ExploreScreen() {
     }
   }, [selectedRoute]);
 
+  useEffect(() => {
+    if (selectedRoute && mapRef.current) {
+      // Calculate the bounds that include all markers
+      const coords = [
+        {
+          latitude: selectedRoute.drop_off_lat,
+          longitude: selectedRoute.drop_off_long,
+        },
+        {
+          latitude: selectedRoute.pickup_lat,
+          longitude: selectedRoute.pickup_long,
+        },
+
+        ...pickupLocations.map((loc) => ({
+          latitude: loc.lat,
+          longitude: loc.long,
+        })),
+        ...activeShuttles.map((shuttle) => ({
+          latitude: shuttle.current_lat,
+          longitude: shuttle.current_long,
+        })),
+      ];
+
+      mapRef.current.fitToCoordinates(coords, {
+        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+        animated: true,
+      });
+    }
+  }, [selectedRoute, pickupLocations, activeShuttles]);
+
   const handleMarkerPress = (route) => {
     setModalVisible(true);
   };
@@ -97,33 +150,54 @@ export default function ExploreScreen() {
   const CustomMarker = ({ type }) => (
     <View style={styles.markerContainer}>
       <MaterialIcons
-        name={type === "shuttle" ? "directions-bus" : "location-on"}
+        name={
+          type === "shuttle"
+            ? "directions-bus"
+            : type === "pickup"
+            ? "add-location"
+            : "location-on"
+        }
         size={type === "shuttle" ? 30 : 24}
-        color={type === "shuttle" ? "#4CAF50" : "red"}
+        color={
+          type === "shuttle" ? "#4CAF50" : type === "pickup" ? "#2196F3" : "red"
+        }
       />
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <MapView style={styles.map} showsUserLocation={true}>
+      <MapView ref={mapRef} style={styles.map} showsUserLocation={true}>
         {selectedRoute && (
           <Marker
-            key={selectedRoute.id}
+            key={`Destination-${selectedRoute.id}`}
             coordinate={{
               latitude: selectedRoute.drop_off_lat,
               longitude: selectedRoute.drop_off_long,
             }}
-            title={`${selectedRoute.route} Drop Off`}
+            title={`${selectedRoute.route} Destination`}
             onPress={() => handleMarkerPress(selectedRoute)}
           >
             <CustomMarker type="dropoff" />
           </Marker>
         )}
 
+        {pickupLocations.map((location, index) => (
+          <Marker
+            key={`pickup/drop off -${location.id}`}
+            coordinate={{
+              latitude: location.lat,
+              longitude: location.long,
+            }}
+            title={`Pickup Location ${index + 1}`}
+          >
+            <CustomMarker type="pickup" />
+          </Marker>
+        ))}
+
         {activeShuttles.map((shuttle) => (
           <Marker
-            key={shuttle.id}
+            key={`shuttle-${shuttle.id}`}
             coordinate={{
               latitude: shuttle.current_lat,
               longitude: shuttle.current_long,
@@ -131,11 +205,7 @@ export default function ExploreScreen() {
             title={`Shuttle ${shuttle.shuttles.shuttle_number}`}
             description={`Active on ${selectedRoute.route}`}
           >
-            <View
-              style={{ backgroundColor: "white", padding: 5, borderRadius: 20 }}
-            >
-              <TabBarIcon name="bus-outline" color="black" />
-            </View>
+            <CustomMarker type="shuttle" />
           </Marker>
         ))}
       </MapView>

@@ -75,7 +75,6 @@ export default function PickupLocations() {
       fetchLocations();
       Alert.alert("Success", "Pickup location added successfully");
     } catch (error) {
-      console.log(error);
       Alert.alert("Error", "Could not add pickup location");
     }
   };

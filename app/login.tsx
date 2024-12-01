@@ -81,8 +81,14 @@ export default function LoginScreen() {
 
         <View style={styles.registerContainer}>
           <Text>Don't have an account? </Text>
-          <Link href="/register" style={styles.registerLink}>
+          <Link href="/register" style={styles.registerLink} push={true}>
             Register
+          </Link>
+        </View>
+        <View style={styles.registerContainer}>
+          <Text>Forgot Password? </Text>
+          <Link href="/auth/resetPw" style={styles.registerLink} push={true}>
+            Reset Password
           </Link>
         </View>
       </View>

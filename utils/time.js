@@ -34,6 +34,5 @@ export function getTimeSlots(startTime, endTime) {
       slots.push(formatAMPM(time)); // Add formatted time with AM/PM
     }
   }
-  console.log(slots);
   return slots;
 }

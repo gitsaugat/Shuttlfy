@@ -1,3 +1,4 @@
+//@ts-nocheck
 import "expo-router/entry";
 
 import {
@@ -6,7 +7,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
@@ -15,11 +16,32 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import RouteProvider, { RouteContext } from "@/contexts/routeContext";
 import AuthProvider, { AuthContext } from "@/contexts/authContext";
 import { RequireAuth } from "@/components/auth/requireAuth";
+import * as Linking from "expo-linking";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const router = useRouter();
+  useEffect(() => {
+    const handleDeepLink = ({ url }) => {
+      if (url && url.includes("/auth/reset")) {
+        router.replace("/auth/reset");
+      }
+    };
+
+    const subscription = Linking.addEventListener("url", handleDeepLink);
+
+    Linking.getInitialURL().then((url) => {
+      if (url && url.includes("/auth/reset")) {
+        router.replace("/auth/reset");
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),

@@ -14,7 +14,7 @@ import { Feather } from "@expo/vector-icons";
 export default function AdminDashboard() {
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Admin Dashboard</Text>
+      <Text style={styles.title}> Dashboard</Text>
 
       <View style={styles.cardContainer}>
         <TouchableOpacity

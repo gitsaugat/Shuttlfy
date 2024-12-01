@@ -95,16 +95,6 @@ const driver = () => {
     if (!selectedRoute || !selectedShuttle || !currentLocation) return;
 
     try {
-      console.log(userInfo);
-      console.log({
-        route: selectedRoute,
-        shuttle: selectedShuttle,
-        driver: userInfo?.userInfo,
-        current_lat: currentLocation.latitude,
-        current_long: currentLocation.longitude,
-        is_active: true,
-        updated_at: new Date().toISOString(),
-      });
       // Insert initial tracking record
       const { data, error } = await supabase
         .from("shuttle_locations")
